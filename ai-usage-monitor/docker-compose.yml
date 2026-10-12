@@ -1,0 +1,25 @@
+# Local containers. Published ports stay on 127.0.0.1.
+# Replace API_AUTH_TOKEN before any host mapping that is not loopback.
+services:
+  api:
+    build: .
+    environment:
+      BIND_HOST: 0.0.0.0
+      REQUIRE_AUTH: "true"
+      API_AUTH_TOKEN: ${API_AUTH_TOKEN:-change-me-local-only}
+      DATABASE_URL: sqlite:///./data/usage.db
+      SCHEDULER_ENABLED: "false"
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - ./data:/app/data
+  ui:
+    build: .
+    command: streamlit run frontend/Home.py --server.address 0.0.0.0 --server.port 8501
+    environment:
+      API_BASE_URL: http://api:8000
+      API_AUTH_TOKEN: ${API_AUTH_TOKEN:-change-me-local-only}
+    ports:
+      - "127.0.0.1:8501:8501"
+    depends_on:
+      - api
